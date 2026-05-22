@@ -4,6 +4,26 @@
 
 Write the fastest possible autoregressive generation loop for a tiny decoder-only transformer. You'll start from a slow baseline, identify what's wasting time, and apply a series of optimizations to reach a significant speedup.
 
+## Grading (60 points total)
+
+| Part                                              | Points |
+| ------------------------------------------------- | -----: |
+| `profile()` — produces a usable Chrome trace      |      5 |
+| `generate_optimized()` — runs and times the loop  |      5 |
+| `optimized_loop()` — speedup over the V0 baseline |     30 |
+| Writeup (changes, per-fix speedups, biggest win)  |     20 |
+
+The `optimized_loop` points are awarded by the **measured speedup** that `time_generation` reports against the V0 slow baseline on the target GPU (L40S):
+
+| Speedup vs V0 | Points |
+| ------------- | -----: |
+| < 1.5×        |      0 |
+| ≥ 1.5×        |     12 |
+| ≥ 3× (Good)   |     22 |
+| ≥ 4× (Great)  |     30 |
+
+If you cannot reach the next tier, partial credit is still awarded for the lower tier you do hit.
+
 ## Setup
 
 The model is a randomly-initialized 2-layer Llama built from a `LlamaConfig` (`hidden_size=2048`, `intermediate_size=6144`, 8 attention heads, 8 KV heads, `vocab_size=4096`). It runs on CUDA with synthetic random token IDs — no tokenizer, no pretrained weights — so the trace stays focused on the generation loop itself rather than I/O or model loading.
@@ -15,34 +35,42 @@ Two run lengths are used:
 
 Each "step" is one forward pass through the model, so the slow baseline does 12 forward passes per profile and 128 per timed run.
 
-## Speedup targets
-
-Measured on an L40S against the V0 slow baseline (`slow_loop`, fp32, no KV cache):
-
-- **Good:** > 3× speedup — bf16 + a couple of host-side fixes.
-- **Great:** > 4× speedup — full stack, including `torch.compile`.
-
 ## File Layout
 
 - `hw2_task.py`: **your only file to edit** — implement all three functions described below
 - `utils.py`: provided helpers — `build_model`, `slow_loop`, `time_generation`, `get_input_ids` (do not modify)
 - `results/`: output directory for Chrome trace files
 
-## Run
+## What to do
 
-From repository root:
+1. Implement the three functions in `hw2_task.py`:
+   - `profile(loop_fn, model, input_ids, trace_name)` — wrap `loop_fn` with `torch.profiler`, print the summary table, and export a Chrome trace to `results/trace_name`.
+   - `optimized_loop(model, input_ids, n_steps)` — starts as a copy of `slow_loop`. Make it as fast as possible. Changes may span the loop body and the model loading in `generate_optimized()`.
+   - `generate_optimized()` — build the tiny Llama (consider dtype and other loading options too), then call `profile` and `time_generation` on `optimized_loop`, and **return the elapsed time** from `time_generation` so `main()` can print a speedup.
+2. From the repository root, run:
 
-```bash
-python3 hw2/hw2_task.py
-```
+   ```bash
+   python3 hw2/hw2_task.py
+   ```
 
-## Your Tasks
+   The script prints the two `time_generation` lines and then a `SUMMARY` block with the computed speedup, e.g.:
 
-All three functions live in `hw2_task.py` and must be completed:
+   ```
+   Slow: 128 tokens in 21.34s (6.0 tok/s)
+   Optimized: 128 tokens in 4.91s (26.1 tok/s)
+   ============================================================
+   SUMMARY
+   ============================================================
+     Slow:       21.34s
+     Optimized:   4.91s
+     Speedup:     4.35x  (vs V0 slow baseline)
+   ```
 
-- `**profile(loop_fn, model, input_ids, trace_name)**` — wrap `loop_fn` with `torch.profiler`, print the summary table, and export a Chrome trace to `results/trace_name`.
-- `**optimized_loop(model, input_ids, n_steps)**` — starts as a copy of `slow_loop`. Make it as fast as possible. Changes may span the loop body and the model loading in `generate_optimized()`.
-- `**generate_optimized()**` — build the tiny Llama (consider dtype and other loading options too), then call `profile` and `time_generation` on `optimized_loop`.
+   The `Speedup` line is the number that determines your grade tier (see the table above). It also writes two Chrome traces to `hw2/results/`:
+   - `v0_slow_trace.json`
+   - `v1_optimized_trace.json` (or whatever name you pass)
+3. **Cross-check with the traces.** Open both at [ui.perfetto.dev](https://ui.perfetto.dev) to confirm your fixes are actually showing up: the optimized trace should have a much denser GPU stream and far fewer per-step CPU↔GPU sync points than V0.
+4. Fill in the **Writeup** comment block at the bottom of `hw2_task.py` (see below).
 
 ## Constraints
 
@@ -77,7 +105,6 @@ GPU stream: some_kernel                ← GPU executes it later
 
 Because launches are asynchronous, a healthy trace has the CPU and GPU rows both densely filled and overlapping. When the CPU thread has long spans with **no `cudaLaunchKernel` at the bottom**, the CPU is doing real computation itself instead of delegating to the GPU — and the GPU stream goes quiet.
 
-When investigating a slow trace, compare total GPU kernel time against the profile's wall-clock span: if kernel time ≪ wall the GPU is idle most of the time and you're dispatch bound (the gaps are either the CPU waiting on the GPU or the GPU waiting on the CPU to queue the next kernel), and if kernel time ≈ wall the GPU is saturated and you're compute bound (find which kernels dominate and ask whether that work is necessary and whether it's running on the fastest hardware path available).
 
 **Trust the trace for structure, not for wall-clock.** `torch.profiler` pays a few microseconds of bookkeeping per aten op, which is negligible when ops are large but can dominate the CPU timeline when there are hundreds of tiny ops per step. Use the trace to find *what* to fix (kernel names and shapes, launch patterns, per-step sync points, redundant work); use the unprofiled `time_generation` numbers to confirm *how much* the fix actually helps.
 
@@ -90,4 +117,3 @@ In the comment block at the bottom of `hw2_task.py`, briefly describe:
 - What you changed and why
 - The speedup each fix contributed
 - Which fix had the biggest impact and why
-

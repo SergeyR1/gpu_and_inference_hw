@@ -2,9 +2,11 @@
 
 ## Contents
 
-- `hw1/`: implement and benchmark operations with different arithmetic intensity.
-- `hw2/`: profile and optimize an autoregressive generation loop.
-- `hw3/` *(optional)*: build the memory and scheduling core of a mini LLM inference engine.
+- `hw1/` (40 pts): implement and benchmark operations with different arithmetic intensity.
+- `hw2/` (60 pts): profile and optimize an autoregressive generation loop.
+- `hw3/` *(optional, ungraded)*: build the memory and scheduling core of a mini LLM inference engine.
+
+HW1 and HW2 together add up to **100 points**. See each subfolder's `README.md` for the per-part point breakdown and the expected submission format.
 
 ## Setup
 

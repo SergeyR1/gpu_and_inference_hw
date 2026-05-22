@@ -30,9 +30,10 @@ def profile(loop_fn, model, input_ids, trace_name: str):
     pass
 
 
-def generate_optimized(optimized_trace_name: str):
+def generate_optimized(optimized_trace_name: str) -> float:
     # TODO: load the model (consider dtype and other loading options),
-    # then call profile() and time_generation() on optimized_loop
+    # then call profile() and time_generation() on optimized_loop.
+    # Return the elapsed time from time_generation so main() can print a speedup.
     pass
 
 
@@ -46,12 +47,24 @@ def main():
     model = build_model(torch.float32)
     input_ids = get_input_ids()
     profile(slow_loop, model, input_ids, "v0_slow_trace.json")
-    time_generation(slow_loop, model, input_ids, "Slow")
+    slow_elapsed = time_generation(slow_loop, model, input_ids, "Slow")
     del model
     torch.cuda.empty_cache()
 
     print("\n--- Part 2: Optimized ---")
-    generate_optimized(optimized_trace_name="v1_optimized_trace.json")
+    optimized_elapsed = generate_optimized(optimized_trace_name="v1_optimized_trace.json")
+
+    print("\n" + "=" * 60)
+    print("SUMMARY")
+    print("=" * 60)
+    if optimized_elapsed is None or optimized_elapsed <= 0:
+        print("generate_optimized() did not return a positive elapsed time; "
+              "cannot compute speedup.")
+    else:
+        speedup = slow_elapsed / optimized_elapsed
+        print(f"  Slow:      {slow_elapsed:6.2f}s")
+        print(f"  Optimized: {optimized_elapsed:6.2f}s")
+        print(f"  Speedup:   {speedup:6.2f}x  (vs V0 slow baseline)")
 
 
 if __name__ == "__main__":

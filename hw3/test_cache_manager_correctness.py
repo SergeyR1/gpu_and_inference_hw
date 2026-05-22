@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from hw3_inference_engine.hw3_task import CacheManager as StudentCacheManager
+from hw3_task import CacheManager as StudentCacheManager
 
 
 def test_allocate_returns_none_when_capacity_cannot_be_freed() -> None:

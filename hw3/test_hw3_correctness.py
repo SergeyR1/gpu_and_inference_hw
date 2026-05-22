@@ -1,13 +1,13 @@
 """Self-check tests for HW3 student implementations.
 
-Run from repo root:
-    pytest hw3_inference_engine/test_hw3_correctness.py
+Run from hw3 dir:
+    pytest test_hw3_correctness.py
 """
 
 from __future__ import annotations
-from hw3_inference_engine.engine_utils import Request, BatchPhase
-from hw3_inference_engine.hw3_task import CacheManager as StudentCacheManager
-from hw3_inference_engine.hw3_task import Scheduler as StudentScheduler
+from engine_utils import Request, BatchPhase
+from hw3_task import CacheManager as StudentCacheManager
+from hw3_task import Scheduler as StudentScheduler
 
 
 def test_allocate_can_evict_overlapping_prefix_entries() -> None:

@@ -1,4 +1,4 @@
-# HW3: Mini Inference Engine
+# HW3: Mini Inference Engine *(optional, ungraded)*
 
 ## Goal
 
@@ -10,6 +10,8 @@ You will implement:
 
 This homework runs on CPU. The model is intentionally small and synthetic so the interesting work is the engine state machine, not GPU kernels or model quality.
 
+**Grading:** this assignment is **optional and ungraded**. It is included for students who want to go beyond HW1 + HW2 and see how a real inference engine manages KV memory and schedules concurrent requests internally; nothing here counts toward the course total.
+
 ## What You Should Learn
 
 Real inference engines are mostly about keeping expensive compute and scarce KV memory under control while many requests are in flight. This assignment focuses on three ideas that show up in systems such as vLLM, SGLang, TensorRT-LLM, and TGI:
@@ -19,6 +21,8 @@ Real inference engines are mostly about keeping expensive compute and scarce KV 
 - **Continuous batching:** each engine step runs one homogeneous batch, but the set of active requests changes over time as new requests arrive, old requests finish, and memory pressure forces preemption.
 
 The implementation is deliberately smaller than a production engine, but the ownership rules are real.
+
+> **Recommended background:** Lecture 2 covers Paged Attention, Prefix Caching, and Continuous Batching — the three ideas this homework is built around. Watching it first will make the `CacheManager` and `Scheduler` contracts below easier to read.
 
 ## File Layout
 

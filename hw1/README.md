@@ -4,25 +4,41 @@
 
 Build intuition for why some GPU kernels are fast and others are not by plotting real measurements on a roofline diagram.
 
+## Grading (40 points total)
+
+| Part                                              | Points |
+| ------------------------------------------------- | -----: |
+| Part 1a — `lowest_ai_fn`                          |      4 |
+| Part 1b — `make_compute_fn` (eager + compiled)    |      8 |
+| Part 2  — `benchmark_fn` (CUDA events)            |      8 |
+| Part 3  — `compute_elementwise_metrics`           |      8 |
+| Part 4  — Writeup (Q1–Q4, 3 pts each)             |     12 |
+
+Full credit on Parts 1–3 requires that `python3 hw1/hw1_task.py` runs to completion and produces a roofline plot whose points sit *below* the theoretical ceiling, with the compiled `ops-K` series moving rightward (higher AI) as `K` grows.
+
 ## File Layout
 
 - `hw1_task.py`: task entrypoint
 - `hw1_task_impl.py`: functions you implement (TODOs)
 - `hw1_runtime.py`: provided benchmark/measurement/plotting utilities
+- `results/`: output directory for the roofline plot and JSON data
 
-## Run
+## What to do
 
-From repository root:
+1. Fill in the four TODOs in `hw1/hw1_task_impl.py` (Parts 1a, 1b, 2, 3).
+2. From the repository root, run:
 
-```bash
-python3 hw1/hw1_task.py
-```
+   ```bash
+   python3 hw1/hw1_task.py
+   ```
 
-You will:
+   The script prints a per-row line for each measured point (with timing, AI, and TFLOP/s) and writes:
+   - `hw1/results/roofline.png` — the roofline plot
+   - `hw1/results/roofline_data.json` — the raw measurements
 
-1. Write PyTorch functions with varying arithmetic intensity
-2. Compare eager execution against `torch.compile` for the same `ops-K` operations
-3. Benchmark them with CUDA events and plot the differences on a roofline diagram
+3. **Inspect the results.**
+4. Answer Q1–Q4 (Part 4) in the comment block at the bottom of `hw1_task_impl.py`.
+
 
 ## Background
 

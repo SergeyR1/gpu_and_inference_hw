@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from hw3_inference_engine.engine_utils import (
+from engine_utils import (
     Request,
     RequestStatus,
     SchedulingPolicy,
     BatchPhase,
 )
-from hw3_inference_engine.hw3_task import CacheManager as StudentCacheManager
-from hw3_inference_engine.hw3_task import Scheduler as StudentScheduler
+from hw3_task import CacheManager as StudentCacheManager
+from hw3_task import Scheduler as StudentScheduler
 
 
 def _make_scheduler(
