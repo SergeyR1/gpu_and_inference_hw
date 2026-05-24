@@ -1,0 +1,29 @@
+HW1: GPU Roofline Model — NVIDIA H100 80GB HBM3
+======================================================================
+
+Theoretical specs (FP32):
+  Peak compute:    67 TFLOP/s
+  Peak bandwidth:  3.35 TB/s
+  Ridge point:     20.0 FLOP/Byte
+
+Running benchmarks (first run compiles kernels via torch.compile)...
+  lowest-AI:  0.184 ms | BW: 2.92 TB/s
+    1 ops (   eager): 0.447 ms | AI: 0.0833 FLOP/B | 0.30 TFLOP/s
+    1 ops (compiled): 0.213 ms | AI: 0.25 FLOP/B | 0.63 TFLOP/s
+    2 ops (   eager): 0.974 ms | AI: 0.0833 FLOP/B | 0.28 TFLOP/s
+    2 ops (compiled): 0.211 ms | AI: 0.5 FLOP/B | 1.27 TFLOP/s
+    4 ops (   eager): 2.023 ms | AI: 0.0833 FLOP/B | 0.27 TFLOP/s
+    4 ops (compiled): 0.213 ms | AI: 1 FLOP/B | 2.52 TFLOP/s
+    8 ops (   eager): 4.127 ms | AI: 0.0833 FLOP/B | 0.26 TFLOP/s
+    8 ops (compiled): 0.212 ms | AI: 2 FLOP/B | 5.07 TFLOP/s
+   16 ops (   eager): 8.331 ms | AI: 0.0833 FLOP/B | 0.26 TFLOP/s
+   16 ops (compiled): 0.212 ms | AI: 4 FLOP/B | 10.15 TFLOP/s
+   32 ops (   eager): 16.742 ms | AI: 0.0833 FLOP/B | 0.26 TFLOP/s
+   32 ops (compiled): 0.211 ms | AI: 8 FLOP/B | 20.33 TFLOP/s
+   64 ops (   eager): 33.562 ms | AI: 0.0833 FLOP/B | 0.26 TFLOP/s
+   64 ops (compiled): 0.212 ms | AI: 16 FLOP/B | 40.52 TFLOP/s
+  128 ops (   eager): 67.198 ms | AI: 0.0833 FLOP/B | 0.26 TFLOP/s
+  128 ops (compiled): 0.323 ms | AI: 32 FLOP/B | 53.20 TFLOP/s
+  matmul 1024×1024: 0.067 ms | AI: 170.7 FLOP/B | 32.19 TFLOP/s
+  matmul 2048×2048: 0.349 ms | AI: 341.3 FLOP/B | 49.16 TFLOP/s
+  matmul 4096×4096: 2.672 ms | AI: 682.7 FLOP/B | 51.44 TFLOP/s
